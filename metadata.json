@@ -1,0 +1,5 @@
+{
+  "name": "SoulSync 2026",
+  "description": "A next-generation dating app profile setup experience with immersive animations and modern aesthetics.",
+  "requestFramePermissions": ["camera"]
+}
