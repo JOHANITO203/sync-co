@@ -29,8 +29,7 @@ import {
   Send,
   MoreHorizontal,
   MapPin,
-  Info,
-  Github
+  Info
 } from 'lucide-react';
 
 type Step = 'welcome' | 'basic' | 'photos' | 'interests' | 'bio' | 'complete' | 'main';
@@ -84,12 +83,10 @@ const MOCK_MESSAGES = [
 ];
 
 export default function App() {
-  const [step, setStep] = useState<Step>('main');
+  const [step, setStep] = useState<Step>('welcome');
   const [activeTab, setActiveTab] = useState<MainTab>('discover');
   const [selectedChat, setSelectedChat] = useState<typeof MOCK_MESSAGES[0] | null>(null);
   const [showMatch, setShowMatch] = useState(false);
-  const [githubToken, setGithubToken] = useState<string | null>(null);
-  const [githubRepos, setGithubRepos] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     name: 'Alex',
     age: '24',
@@ -154,44 +151,6 @@ export default function App() {
       setDiscoverIndex(prev => prev + 1);
     }
   };
-
-  const handleConnectGitHub = async () => {
-    try {
-      const response = await fetch('/api/auth/github/url');
-      if (!response.ok) throw new Error('Failed to get auth URL');
-      const { url } = await response.json();
-
-      const authWindow = window.open(url, 'github_oauth', 'width=600,height=700');
-      if (!authWindow) alert('Please allow popups to connect GitHub.');
-    } catch (error) {
-      console.error('GitHub connect error:', error);
-    }
-  };
-
-  const fetchGitHubRepos = async (token: string) => {
-    try {
-      const response = await fetch('/api/github/repos', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setGithubRepos(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch repos:', error);
-    }
-  };
-
-  React.useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'GITHUB_AUTH_SUCCESS') {
-        setGithubToken(event.data.token);
-        fetchGitHubRepos(event.data.token);
-      }
-    };
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
 
   return (
     <div className="min-h-screen bg-[#0a0502] text-white font-sans selection:bg-orange-500/30 overflow-hidden relative">
@@ -515,39 +474,6 @@ export default function App() {
                             <Palette size={20} className="text-white/40" />
                             <span className="text-[10px] uppercase font-bold tracking-tighter text-white/40">Edit</span>
                           </div>
-                        </div>
-
-                        {/* GitHub Integration */}
-                        <div className="space-y-4">
-                          <h3 className="text-sm font-bold text-white/40 uppercase tracking-widest">Digital Footprint</h3>
-                          {!githubToken ? (
-                            <button 
-                              onClick={handleConnectGitHub}
-                              className="w-full flex items-center justify-center gap-3 py-4 bg-[#24292e] hover:bg-[#2c3238] rounded-2xl font-bold transition-all border border-white/10"
-                            >
-                              <Github size={20} />
-                              Connect GitHub
-                            </button>
-                          ) : (
-                            <div className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-4">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <Github size={18} className="text-white/60" />
-                                  <span className="text-sm font-bold">GitHub Connected</span>
-                                </div>
-                                <div className="w-2 h-2 bg-green-500 rounded-full" />
-                              </div>
-                              <div className="space-y-2">
-                                {githubRepos.map(repo => (
-                                  <div key={repo.id} className="flex items-center justify-between text-xs text-white/60 bg-white/5 p-2 rounded-lg">
-                                    <span className="truncate max-w-[150px]">{repo.name}</span>
-                                    <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded uppercase">{repo.language || 'Code'}</span>
-                                  </div>
-                                ))}
-                                {githubRepos.length === 0 && <p className="text-xs text-white/30 italic">Fetching repositories...</p>}
-                              </div>
-                            </div>
-                          )}
                         </div>
 
                         <div className="space-y-6">
